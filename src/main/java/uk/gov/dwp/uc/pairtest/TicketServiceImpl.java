@@ -51,13 +51,11 @@ public class TicketServiceImpl implements TicketService {
 
         var totalAmount = ticketPurchaseRequest.getTicketTypeRequests()
                 .stream()
-                .map(TicketRequest::getTicketType)
-                .mapToInt(pricingService::getPrice)
+                .mapToInt(t -> pricingService.getPrice(t.getTicketType()) * t.getNoOfTickets())
                 .sum();
         var totalSeats = ticketPurchaseRequest.getTicketTypeRequests()
                 .stream()
-                .map(TicketRequest::getTicketType)
-                .mapToInt(seatingCalculatorService::getSeatReservationCount)
+                .mapToInt(t -> seatingCalculatorService.getSeatReservationCount(t.getTicketType()) * t.getNoOfTickets())
                 .sum();
 
         ticketPaymentService.makePayment(ticketPurchaseRequest.getAccountId(), totalAmount);
