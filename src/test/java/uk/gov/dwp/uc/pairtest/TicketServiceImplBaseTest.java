@@ -11,15 +11,12 @@ import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Supplier;
 
 import static org.mockito.Mockito.mock;
+import static uk.gov.dwp.uc.pairtest.TicketServiceHelper.*;
 
 public class TicketServiceImplBaseTest {
 
-    private final Random random = ThreadLocalRandom.current();
     private TicketServiceImpl impl;
 
     @BeforeEach
@@ -33,60 +30,62 @@ public class TicketServiceImplBaseTest {
     @Test
     void passesOnZeroIndividualTickets() {
         var tickets = new ArrayList<TicketRequest>(0);
-        impl.purchaseTickets(generateValidTicketPurchaseRequest(tickets));
+        impl.purchaseTickets(makeValidRequest(tickets));
     }
 
     @Test
     void passesOnTenIndividualTickets() {
-        var tickets = getTicketRequests(10, this::generateTestableTicketRequestSingleIssue);
-        impl.purchaseTickets(generateValidTicketPurchaseRequest(tickets));
+        var tickets = makeCustomRequest(10, TicketServiceHelper::makeOneAdultTicket);
+        impl.purchaseTickets(makeValidRequest(tickets));
     }
 
     @Test
     void passesOnTwentyIndividualTickets() {
-        var tickets = getTicketRequests(20, this::generateTestableTicketRequestSingleIssue);
-        impl.purchaseTickets(generateValidTicketPurchaseRequest(tickets));
+        var tickets = makeCustomRequest(20, TicketServiceHelper::makeOneAdultTicket);
+        impl.purchaseTickets(makeValidRequest(tickets));
     }
 
     @Test
     void passesOnTwentyCollectionTickets() {
-        var tickets = getTicketRequests(4, () -> generateValidTestableTicketRequestMultipleIssueFixedAmount(5));
-        impl.purchaseTickets(generateValidTicketPurchaseRequest(tickets));
+        var tickets = makeCustomRequest(4,
+                () -> makeMultiAdultTicket(5));
+        impl.purchaseTickets(makeValidRequest(tickets));
     }
 
     @Test
     void failsOnTwentyOneIndividualTickets() {
-        var tickets = getTicketRequests(21, this::generateTestableTicketRequestSingleIssue);
+        var tickets = makeCustomRequest(21, TicketServiceHelper::makeOneAdultTicket);
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(generateValidTicketPurchaseRequest(tickets)));
+                () -> impl.purchaseTickets(makeValidRequest(tickets)));
     }
 
     @Test
     void failsOnTwentyOneCollectionTickets() {
-        var tickets = getTicketRequests(3, () -> generateValidTestableTicketRequestMultipleIssueFixedAmount(7));
+        var tickets = makeCustomRequest(3,
+                () -> makeMultiAdultTicket(7));
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(generateValidTicketPurchaseRequest(tickets)));
+                () -> impl.purchaseTickets(makeValidRequest(tickets)));
     }
 
     @Test
     void failsOnNegativeCollectionTickets() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(generateValidTicketPurchaseRequest(
-                        List.of(generateInvalidTestableTicketRequestMultipleIssueRandom()))));
+                () -> impl.purchaseTickets(makeValidRequest(
+                        List.of(makeOneInvalidAdultTicket()))));
     }
 
     @Test
     void failsOnNegativeAccountId() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(generateInvalidTicketPurchaseRequest(
-                        List.of(generateTestableTicketRequestSingleIssue()))));
+                () -> impl.purchaseTickets(makeInvalidRequest(
+                        List.of(makeOneAdultTicket()))));
     }
 
     @Test
     void failsOnAccountIdEqualsZero() {
         Assertions.assertThrows(InvalidPurchaseException.class,
                 () -> impl.purchaseTickets(new TicketPurchaseRequest(0,
-                        List.of(generateTestableTicketRequestSingleIssue()))));
+                        List.of(makeOneAdultTicket()))));
     }
 
     @Test
@@ -105,59 +104,31 @@ public class TicketServiceImplBaseTest {
     @Test
     void failsOnInfantWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
-                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 1)))));
+                () -> impl.purchaseTickets(makeRequestWithId(1,
+                        List.of(makeOneChildTicket()))));
     }
 
     @Test
     void failsOnInfantAndChildWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
-                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 1),
-                                new TicketRequest(TicketRequest.Type.INFANT, 1)))));
+                () -> impl.purchaseTickets(makeRequestWithId(1,
+                        List.of(makeOneChildTicket(),
+                                makeOneInfantTicket()))));
     }
 
     @Test
     void failsOnMultipleInfantAndChildWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
-                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 2),
-                                new TicketRequest(TicketRequest.Type.INFANT, 3)))));
+                () -> impl.purchaseTickets(makeRequestWithId(1,
+                        List.of(makeMultiChildTicket(2),
+                                makeMultiInfantTicket(3)))));
     }
 
     @Test
     void failsOnThreeChildrenInATrenchCoatWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
-                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 3)))));
-    }
-
-    private TicketPurchaseRequest generateValidTicketPurchaseRequest(List<TicketRequest> ticketRequest) {
-        return new TicketPurchaseRequest(random.nextLong(0, Long.MAX_VALUE), ticketRequest);
-    }
-
-    private TicketPurchaseRequest generateInvalidTicketPurchaseRequest(List<TicketRequest> ticketRequest) {
-        return new TicketPurchaseRequest(random.nextLong(Long.MIN_VALUE, 0), ticketRequest);
-    }
-
-    private TicketRequest generateTestableTicketRequestSingleIssue() {
-        return new TicketRequest(TicketRequest.Type.ADULT, 1);
-    }
-
-    private TicketRequest generateValidTestableTicketRequestMultipleIssueFixedAmount(int noOfTicketsFixed) {
-        return new TicketRequest(TicketRequest.Type.ADULT, noOfTicketsFixed);
-    }
-
-    private TicketRequest generateInvalidTestableTicketRequestMultipleIssueRandom() {
-        return new TicketRequest(TicketRequest.Type.ADULT, random.nextInt(Integer.MIN_VALUE, 0));
-    }
-
-    private ArrayList<TicketRequest> getTicketRequests(int listSize, Supplier<TicketRequest> callable) {
-        var tickets = new ArrayList<TicketRequest>(listSize);
-        for (int i = 0; i < listSize; i++) {
-            tickets.add(callable.get());
-        }
-        return tickets;
+                () -> impl.purchaseTickets(makeRequestWithId(1,
+                        List.of(makeMultiChildTicket(3)))));
     }
 
 }
