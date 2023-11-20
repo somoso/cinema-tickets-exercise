@@ -5,10 +5,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import thirdparty.discount.DiscountService;
 import thirdparty.paymentgateway.TicketPaymentService;
 import thirdparty.seatbooking.SeatReservationService;
-
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -31,150 +30,141 @@ public class TicketServiceSeatingPricingTest {
     @Mock
     private SeatReservationService seatReservationService;
 
+    @Mock
+    private DiscountService discountService;
+
     @InjectMocks
     private TicketServiceImpl impl;
 
     @Test
     void passesOnCalculatingSingleAdultPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneAdultTicket()));
         verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 20);
     }
 
     @Test
     void passesOnCalculatingTwoAdultsPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID,
-                List.of(makeMultiAdultTicket(2))));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeMultiAdultTicket(2)));
         verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 40);
     }
 
     @Test
     void passesOnCalculatingThreeAdultsPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID,
-                List.of(makeMultiAdultTicket(3))));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeMultiAdultTicket(3)));
         verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 60);
     }
 
     @Test
     void passesOnCalculatingTwoSeparateAdultsPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneAdultTicket(),
-                makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneAdultTicket(), makeOneAdultTicket()));
         verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 40);
     }
 
     @Test
     void passesOnCalculatingThreeSeparateAdultsPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneAdultTicket(),
-                makeOneAdultTicket(), makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneAdultTicket(), makeOneAdultTicket(),
+                makeOneAdultTicket()));
         verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 60);
     }
 
     @Test
     void passesOnCalculatingSingleChildAdultPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneChildTicket(),
-                makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneChildTicket(), makeOneAdultTicket()));
         verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 30);
     }
 
     @Test
     void passesOnCalculatingSingleInfantAdultPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneInfantTicket(),
-                makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneInfantTicket(), makeOneAdultTicket()));
         verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 20);
     }
 
     @Test
     void passesOnCalculatingSingleAdultChildInfantPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneAdultTicket(),
-                makeOneChildTicket(), makeOneInfantTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneAdultTicket(), makeOneChildTicket(),
+                makeOneInfantTicket()));
         verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 30);
     }
 
     @Test
     void passesOnCalculatingMultiAdultChildInfantPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID,
-                List.of(makeMultiAdultTicket(2), makeMultiChildTicket(2),
-                        makeMultiInfantTicket(2))));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeMultiAdultTicket(2),
+                makeMultiChildTicket(2), makeMultiInfantTicket(2)));
         verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 60);
     }
 
     @Test
     void passesOnCalculatingSingleAdultSeat() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneAdultTicket()));
         verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 1);
     }
 
     @Test
     void passesOnCalculatingTwoAdultsSeats() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID,
-                List.of(makeMultiAdultTicket(2))));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeMultiAdultTicket(2)));
         verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 2);
     }
 
     @Test
     void passesOnCalculatingThreeAdultsSeats() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID,
-                List.of(makeMultiAdultTicket(3))));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeMultiAdultTicket(3)));
         verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 3);
     }
 
     @Test
     void passesOnCalculatingTwoSeparateAdultsSeats() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneAdultTicket(),
-                makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneAdultTicket(), makeOneAdultTicket()));
         verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 2);
     }
 
     @Test
     void passesOnCalculatingThreeSeparateAdultsSeats() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneAdultTicket(),
-                makeOneAdultTicket(), makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneAdultTicket(), makeOneAdultTicket(),
+                makeOneAdultTicket()));
         verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 3);
     }
 
     @Test
     void passesOnCalculatingSingleChildSeatsWithAdult() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneChildTicket(),
-                makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneChildTicket(), makeOneAdultTicket()));
         verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 2);
     }
 
     @Test
     void passesOnCalculatingSingleInfantSeatsWithAdult() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneInfantTicket(),
-                makeOneAdultTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneInfantTicket(), makeOneAdultTicket()));
         verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 1);
     }
 
     @Test
     void passesOnCalculatingSingleAdultChildInfantSeats() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, List.of(makeOneAdultTicket(),
-                makeOneChildTicket(), makeOneInfantTicket())));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeOneAdultTicket(), makeOneChildTicket(),
+                makeOneInfantTicket()));
         verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 2);
     }
 
     @Test
     void passesOnCalculatingMultiAdultChildInfantSeats() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID,
-                List.of(makeMultiAdultTicket(2), makeMultiChildTicket(2),
-                        makeMultiInfantTicket(2))));
+        impl.purchaseTickets(makeRequestWithId(ACCOUNT_ID, makeMultiAdultTicket(2),
+                makeMultiChildTicket(2), makeMultiInfantTicket(2)));
         verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 4);
     }
 

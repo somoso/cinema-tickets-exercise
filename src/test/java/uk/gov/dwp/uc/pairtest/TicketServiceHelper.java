@@ -4,6 +4,7 @@ import uk.gov.dwp.uc.pairtest.domain.TicketPurchaseRequest;
 import uk.gov.dwp.uc.pairtest.domain.TicketRequest;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Supplier;
@@ -14,16 +15,22 @@ public class TicketServiceHelper {
         throw new RuntimeException("Cannot instantiate this class");
     }
 
+    public static TicketPurchaseRequest makeValidRequest(TicketRequest... ticketRequest) {
+        return new TicketPurchaseRequest(ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE),
+                Arrays.asList(ticketRequest));
+    }
+
     public static TicketPurchaseRequest makeValidRequest(List<TicketRequest> ticketRequest) {
         return new TicketPurchaseRequest(ThreadLocalRandom.current().nextLong(0, Long.MAX_VALUE), ticketRequest);
     }
 
-    public static TicketPurchaseRequest makeInvalidRequest(List<TicketRequest> ticketRequest) {
-        return new TicketPurchaseRequest(ThreadLocalRandom.current().nextLong(Long.MIN_VALUE, 0), ticketRequest);
+    public static TicketPurchaseRequest makeInvalidRequest(TicketRequest... ticketRequest) {
+        return new TicketPurchaseRequest(ThreadLocalRandom.current().nextLong(Long.MIN_VALUE, 0),
+                Arrays.asList(ticketRequest));
     }
 
-    public static TicketPurchaseRequest makeRequestWithId(int accountId, List<TicketRequest> ticketRequests) {
-        return new TicketPurchaseRequest(accountId, ticketRequests);
+    public static TicketPurchaseRequest makeRequestWithId(long accountId, TicketRequest... ticketRequests) {
+        return new TicketPurchaseRequest(accountId, Arrays.asList(ticketRequests));
     }
 
     /**
@@ -31,7 +38,7 @@ public class TicketServiceHelper {
      * @return  {@link TicketRequest} object with a nonsensical negative number of tickets.
      */
     public static TicketRequest makeOneInvalidAdultTicket() {
-        return new TicketRequest(TicketRequest.Type.ADULT, ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, 0));
+        return new TicketRequest(TicketRequest.Type.ADULT, ThreadLocalRandom.current().nextInt(Integer.MIN_VALUE, 0), null);
     }
 
     /**
@@ -53,41 +60,48 @@ public class TicketServiceHelper {
      * @return  A cinema ticket request for one adult
      */
     public static TicketRequest makeOneAdultTicket() {
-        return new TicketRequest(TicketRequest.Type.ADULT, 1);
+        return new TicketRequest(TicketRequest.Type.ADULT, 1, null);
     }
 
     /**
      * @return  A cinema ticket request for one child
      */
     public static TicketRequest makeOneChildTicket() {
-        return new TicketRequest(TicketRequest.Type.CHILD, 1);
+        return new TicketRequest(TicketRequest.Type.CHILD, 1, null);
     }
 
     /**
      * @return  A cinema ticket request for one infant
      */
     public static TicketRequest makeOneInfantTicket() {
-        return new TicketRequest(TicketRequest.Type.INFANT, 1);
+        return new TicketRequest(TicketRequest.Type.INFANT, 1, null);
     }
 
     /**
      * @return  A cinema ticket request for many adults
      */
     public static TicketRequest makeMultiAdultTicket(int amount) {
-        return new TicketRequest(TicketRequest.Type.ADULT, amount);
+        return new TicketRequest(TicketRequest.Type.ADULT, amount, null);
     }
 
     /**
      * @return  A cinema ticket request for many children
      */
     public static TicketRequest makeMultiChildTicket(int amount) {
-        return new TicketRequest(TicketRequest.Type.CHILD, amount);
+        return new TicketRequest(TicketRequest.Type.CHILD, amount, null);
     }
 
     /**
      * @return  A cinema ticket request for many infants
      */
     public static TicketRequest makeMultiInfantTicket(int amount) {
-        return new TicketRequest(TicketRequest.Type.INFANT, amount);
+        return new TicketRequest(TicketRequest.Type.INFANT, amount, null);
+    }
+
+    /**
+     * @return  A cinema ticket request for one adult
+     */
+    public static TicketRequest makeOneAdultTicketWithDiscount(String discountCode) {
+        return new TicketRequest(TicketRequest.Type.ADULT, 1, discountCode);
     }
 }

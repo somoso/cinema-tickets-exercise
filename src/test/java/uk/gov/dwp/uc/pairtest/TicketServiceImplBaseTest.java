@@ -3,13 +3,13 @@ package uk.gov.dwp.uc.pairtest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import thirdparty.discount.DiscountService;
 import thirdparty.paymentgateway.TicketPaymentService;
 import thirdparty.seatbooking.SeatReservationService;
 import uk.gov.dwp.uc.pairtest.domain.TicketRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.mockito.Mockito.mock;
 import static uk.gov.dwp.uc.pairtest.TicketServiceHelper.*;
@@ -23,7 +23,8 @@ public class TicketServiceImplBaseTest {
         impl = new TicketServiceImpl(mock(PricingService.class),
                 mock(SeatingCalculatorService.class),
                 mock(TicketPaymentService.class),
-                mock(SeatReservationService.class));
+                mock(SeatReservationService.class),
+                mock(DiscountService.class));
     }
 
     @Test
@@ -69,22 +70,19 @@ public class TicketServiceImplBaseTest {
     @Test
     void failsOnNegativeCollectionTickets() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(makeValidRequest(
-                        List.of(makeOneInvalidAdultTicket()))));
+                () -> impl.purchaseTickets(makeValidRequest(makeOneInvalidAdultTicket())));
     }
 
     @Test
     void failsOnNegativeAccountId() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(makeInvalidRequest(
-                        List.of(makeOneAdultTicket()))));
+                () -> impl.purchaseTickets(makeInvalidRequest(makeOneAdultTicket())));
     }
 
     @Test
     void failsOnAccountIdEqualsZero() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(makeRequestWithId(0,
-                        List.of(makeOneAdultTicket()))));
+                () -> impl.purchaseTickets(makeRequestWithId(0, makeOneAdultTicket())));
     }
 
     @Test
@@ -96,38 +94,32 @@ public class TicketServiceImplBaseTest {
     @Test
     void failsOnChildWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(makeRequestWithId(1,
-                        List.of(makeOneChildTicket()))));
+                () -> impl.purchaseTickets(makeRequestWithId(1, makeOneChildTicket())));
     }
 
     @Test
     void failsOnInfantWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(makeRequestWithId(1,
-                        List.of(makeOneChildTicket()))));
+                () -> impl.purchaseTickets(makeRequestWithId(1, makeOneChildTicket())));
     }
 
     @Test
     void failsOnInfantAndChildWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(makeRequestWithId(1,
-                        List.of(makeOneChildTicket(),
-                                makeOneInfantTicket()))));
+                () -> impl.purchaseTickets(makeRequestWithId(1, makeOneChildTicket(), makeOneInfantTicket())));
     }
 
     @Test
     void failsOnMultipleInfantAndChildWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(makeRequestWithId(1,
-                        List.of(makeMultiChildTicket(2),
-                                makeMultiInfantTicket(3)))));
+                () -> impl.purchaseTickets(makeRequestWithId(1, makeMultiChildTicket(2),
+                                makeMultiInfantTicket(3))));
     }
 
     @Test
     void failsOnThreeChildrenInATrenchCoatWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(makeRequestWithId(1,
-                        List.of(makeMultiChildTicket(3)))));
+                () -> impl.purchaseTickets(makeRequestWithId(1, makeMultiChildTicket(3))));
     }
 
 }

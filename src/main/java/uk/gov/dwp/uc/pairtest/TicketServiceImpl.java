@@ -1,5 +1,7 @@
 package uk.gov.dwp.uc.pairtest;
 
+import thirdparty.discount.DiscountService;
+import thirdparty.discount.exception.InvalidDiscountCodeException;
 import thirdparty.paymentgateway.TicketPaymentService;
 import thirdparty.seatbooking.SeatReservationService;
 import uk.gov.dwp.uc.pairtest.domain.TicketPurchaseRequest;
@@ -7,6 +9,8 @@ import uk.gov.dwp.uc.pairtest.domain.TicketRequest;
 import uk.gov.dwp.uc.pairtest.exception.ExcessiveTicketException;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 import uk.gov.dwp.uc.pairtest.exception.NoAdultPresentException;
+
+import java.math.BigDecimal;
 
 
 public class TicketServiceImpl implements TicketService {
@@ -17,13 +21,15 @@ public class TicketServiceImpl implements TicketService {
     private final SeatingCalculatorService seatingCalculatorService;
     private final TicketPaymentService ticketPaymentService;
     private final SeatReservationService seatReservationService;
+    private final DiscountService discountService;
 
     public TicketServiceImpl(PricingService pricingService, SeatingCalculatorService seatingCalculatorService,
-                             TicketPaymentService ticketPaymentService, SeatReservationService seatReservationService) {
+                             TicketPaymentService ticketPaymentService, SeatReservationService seatReservationService, DiscountService discountService) {
         this.pricingService = pricingService;
         this.seatingCalculatorService = seatingCalculatorService;
         this.ticketPaymentService = ticketPaymentService;
         this.seatReservationService = seatReservationService;
+        this.discountService = discountService;
     }
 
     /**
@@ -83,10 +89,26 @@ public class TicketServiceImpl implements TicketService {
     private void takePayment(TicketPurchaseRequest ticketPurchaseRequest) {
         var totalAmount = ticketPurchaseRequest.getTicketTypeRequests()
                 .stream()
-                .mapToInt(t -> pricingService.getPrice(t.getTicketType()) * t.getNoOfTickets())
+                .mapToInt(t -> (pricingService.getPrice(t.getTicketType()) -
+                        applyDiscount(ticketPurchaseRequest.getAccountId(), t.getDiscountCode(),
+                                pricingService.getPrice(t.getTicketType()))) * t.getNoOfTickets())
                 .sum();
 
         ticketPaymentService.makePayment(ticketPurchaseRequest.getAccountId(), totalAmount);
+    }
+
+    private int applyDiscount(long accountId, String discountCode, int unmodifiedPrice) {
+        if (discountCode == null || discountCode.equals("") || discountCode.trim().equals("")) {
+            return 0;
+        }
+        try {
+            var discount = discountService.getDiscountPercentage(accountId, discountCode);
+            var price = new BigDecimal(unmodifiedPrice);
+            price = price.multiply(BigDecimal.valueOf(discount.percentage()));
+            return price.intValue();
+        } catch (InvalidDiscountCodeException e) {
+            return 0;
+        }
     }
 
     private void reserveSeats(TicketPurchaseRequest ticketPurchaseRequest) {
