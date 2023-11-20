@@ -15,7 +15,7 @@ public final class TicketPurchaseRequest {
 
     public TicketPurchaseRequest(long accountId, List<TicketRequest> ticketRequests) {
         this.accountId = accountId;
-        this.ticketRequests = new ArrayList<>(ticketRequests);
+        this.ticketRequests = Collections.unmodifiableList(ticketRequests);
     }
 
     public long getAccountId() {
@@ -23,7 +23,7 @@ public final class TicketPurchaseRequest {
     }
 
     public List<TicketRequest> getTicketTypeRequests() {
-        return Collections.unmodifiableList(ticketRequests);
+        return ticketRequests;
     }
 
     @Override
