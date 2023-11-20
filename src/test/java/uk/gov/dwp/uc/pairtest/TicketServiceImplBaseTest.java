@@ -84,7 +84,7 @@ public class TicketServiceImplBaseTest {
     @Test
     void failsOnAccountIdEqualsZero() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(new TicketPurchaseRequest(0,
+                () -> impl.purchaseTickets(makeRequestWithId(0,
                         List.of(makeOneAdultTicket()))));
     }
 
@@ -97,8 +97,8 @@ public class TicketServiceImplBaseTest {
     @Test
     void failsOnChildWithoutAdult() {
         Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
-                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 1)))));
+                () -> impl.purchaseTickets(makeRequestWithId(1,
+                        List.of(makeOneChildTicket()))));
     }
 
     @Test
