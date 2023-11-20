@@ -29,6 +29,16 @@ public class TicketServiceImpl implements TicketService {
      */
     @Override
     public void purchaseTickets(TicketPurchaseRequest ticketPurchaseRequest) throws InvalidPurchaseException {
+        rejectInvalidRequests(ticketPurchaseRequest);
+
+        restrictTicketSales(ticketPurchaseRequest);
+
+        prohibitChildrenAndInfantsWithoutAdult(ticketPurchaseRequest);
+
+        takePaymentAndReserveSeats(ticketPurchaseRequest);
+    }
+
+    private static void rejectInvalidRequests(TicketPurchaseRequest ticketPurchaseRequest) {
         if (ticketPurchaseRequest == null) {
             throw new InvalidPurchaseException();
         }
@@ -36,7 +46,9 @@ public class TicketServiceImpl implements TicketService {
         if (ticketPurchaseRequest.getAccountId() <= 0) {
             throw new InvalidPurchaseException();
         }
+    }
 
+    private static void restrictTicketSales(TicketPurchaseRequest ticketPurchaseRequest) {
         if (ticketPurchaseRequest.getTicketTypeRequests().size() > MAX_TICKET_AMOUNT) {
             throw new InvalidPurchaseException();
         }
@@ -48,7 +60,9 @@ public class TicketServiceImpl implements TicketService {
         if (sum > MAX_TICKET_AMOUNT) {
             throw new InvalidPurchaseException();
         }
+    }
 
+    private static void prohibitChildrenAndInfantsWithoutAdult(TicketPurchaseRequest ticketPurchaseRequest) {
         var findUnderage = ticketPurchaseRequest.getTicketTypeRequests().stream()
                 .anyMatch(t -> t.getTicketType() == TicketRequest.Type.CHILD
                         || t.getTicketType() == TicketRequest.Type.INFANT);
@@ -60,7 +74,9 @@ public class TicketServiceImpl implements TicketService {
                 throw new InvalidPurchaseException();
             }
         }
+    }
 
+    private void takePaymentAndReserveSeats(TicketPurchaseRequest ticketPurchaseRequest) {
         var totalAmount = ticketPurchaseRequest.getTicketTypeRequests()
                 .stream()
                 .mapToInt(t -> pricingService.getPrice(t.getTicketType()) * t.getNoOfTickets())
