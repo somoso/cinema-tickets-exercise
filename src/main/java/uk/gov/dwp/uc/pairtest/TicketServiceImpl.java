@@ -35,7 +35,9 @@ public class TicketServiceImpl implements TicketService {
 
         prohibitChildrenAndInfantsWithoutAdult(ticketPurchaseRequest);
 
-        takePaymentAndReserveSeats(ticketPurchaseRequest);
+        takePayment(ticketPurchaseRequest);
+
+        reserveSeats(ticketPurchaseRequest);
     }
 
     private static void rejectInvalidRequests(TicketPurchaseRequest ticketPurchaseRequest) {
@@ -76,17 +78,20 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
-    private void takePaymentAndReserveSeats(TicketPurchaseRequest ticketPurchaseRequest) {
+    private void takePayment(TicketPurchaseRequest ticketPurchaseRequest) {
         var totalAmount = ticketPurchaseRequest.getTicketTypeRequests()
                 .stream()
                 .mapToInt(t -> pricingService.getPrice(t.getTicketType()) * t.getNoOfTickets())
                 .sum();
+
+        ticketPaymentService.makePayment(ticketPurchaseRequest.getAccountId(), totalAmount);
+    }
+
+    private void reserveSeats(TicketPurchaseRequest ticketPurchaseRequest) {
         var totalSeats = ticketPurchaseRequest.getTicketTypeRequests()
                 .stream()
                 .mapToInt(t -> seatingCalculatorService.getSeatReservationCount(t.getTicketType()) * t.getNoOfTickets())
                 .sum();
-
-        ticketPaymentService.makePayment(ticketPurchaseRequest.getAccountId(), totalAmount);
 
         seatReservationService.reserveSeat(ticketPurchaseRequest.getAccountId(), totalSeats);
     }
