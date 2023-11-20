@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import thirdparty.paymentgateway.TicketPaymentService;
 import thirdparty.seatbooking.SeatReservationService;
-import uk.gov.dwp.uc.pairtest.domain.TicketPurchaseRequest;
 import uk.gov.dwp.uc.pairtest.domain.TicketRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
 
