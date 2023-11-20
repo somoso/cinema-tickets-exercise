@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 
 import static org.mockito.Mockito.mock;
 
@@ -71,7 +72,7 @@ public class TicketServiceImplBaseTest {
     void failsOnNegativeCollectionTickets() {
         Assertions.assertThrows(InvalidPurchaseException.class,
                 () -> impl.purchaseTickets(generateValidTicketPurchaseRequest(
-                        List.of(generateInvalidTestableTicketRequestMultipleIssue()))));
+                        List.of(generateInvalidTestableTicketRequestMultipleIssueRandom()))));
     }
 
     @Test
@@ -147,22 +148,18 @@ public class TicketServiceImplBaseTest {
         return new TicketRequest(TicketRequest.Type.ADULT, noOfTicketsFixed);
     }
 
-    private TicketRequest generateInvalidTestableTicketRequestMultipleIssue() {
+    private TicketRequest generateInvalidTestableTicketRequestMultipleIssueRandom() {
         return new TicketRequest(TicketRequest.Type.ADULT, random.nextInt(Integer.MIN_VALUE, 0));
     }
 
-    private ArrayList<TicketRequest> getTicketRequests(int listSize, ICallable<TicketRequest> callable) {
+    private ArrayList<TicketRequest> getTicketRequests(int listSize, Supplier<TicketRequest> callable) {
         // Initialising ArrayList with n + 1 so that we do not waste CPU resources growing the ArrayList past the
         // initial limit of 10
         var tickets = new ArrayList<TicketRequest>(listSize + 1);
         for (int i = 0; i < listSize; i++) {
-            tickets.add(callable.call());
+            tickets.add(callable.get());
         }
         return tickets;
-    }
-
-    private interface ICallable<T> {
-        T call();
     }
 
 }
