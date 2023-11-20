@@ -48,7 +48,7 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
-    private static void restrictTicketSales(TicketPurchaseRequest ticketPurchaseRequest) {
+    private void restrictTicketSales(TicketPurchaseRequest ticketPurchaseRequest) {
         if (ticketPurchaseRequest.getTicketTypeRequests().size() > MAX_TICKET_AMOUNT) {
             throw new InvalidPurchaseException();
         }
@@ -62,7 +62,7 @@ public class TicketServiceImpl implements TicketService {
         }
     }
 
-    private static void prohibitChildrenAndInfantsWithoutAdult(TicketPurchaseRequest ticketPurchaseRequest) {
+    private void prohibitChildrenAndInfantsWithoutAdult(TicketPurchaseRequest ticketPurchaseRequest) {
         var findUnderage = ticketPurchaseRequest.getTicketTypeRequests().stream()
                 .anyMatch(t -> t.getTicketType() == TicketRequest.Type.CHILD
                         || t.getTicketType() == TicketRequest.Type.INFANT);
