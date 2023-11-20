@@ -22,7 +22,7 @@ public class TicketServiceHelper {
         return new TicketPurchaseRequest(ThreadLocalRandom.current().nextLong(Long.MIN_VALUE, 0), ticketRequest);
     }
 
-    public static TicketPurchaseRequest makeRequestWithId(int accountId, List<TicketRequest> ticketRequests) {
+    public static TicketPurchaseRequest makeRequestWithId(long accountId, List<TicketRequest> ticketRequests) {
         return new TicketPurchaseRequest(accountId, ticketRequests);
     }
 
