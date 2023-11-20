@@ -63,10 +63,10 @@ public class TicketServiceImpl implements TicketService {
     }
 
     private void prohibitChildrenAndInfantsWithoutAdult(TicketPurchaseRequest ticketPurchaseRequest) {
-        var findUnderage = ticketPurchaseRequest.getTicketTypeRequests().stream()
+        var foundUnderage = ticketPurchaseRequest.getTicketTypeRequests().stream()
                 .anyMatch(t -> t.getTicketType() == TicketRequest.Type.CHILD
                         || t.getTicketType() == TicketRequest.Type.INFANT);
-        if (findUnderage) {
+        if (foundUnderage) {
             var cannotFindAdult = ticketPurchaseRequest.getTicketTypeRequests()
                     .stream()
                     .noneMatch(t -> t.getTicketType() == TicketRequest.Type.ADULT);
