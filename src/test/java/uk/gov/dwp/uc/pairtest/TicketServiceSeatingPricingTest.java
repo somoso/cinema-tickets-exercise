@@ -72,17 +72,17 @@ public class TicketServiceSeatingPricingTest {
     }
 
     @Test
-    void passesOnCalculatingSingleChildPrice() {
+    void passesOnCalculatingSingleChildAdultPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(generatePurchaseRequest(List.of(generateSingleChildTicket())));
-        verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 10);
+        impl.purchaseTickets(generatePurchaseRequest(List.of(generateSingleChildTicket(), generateSingleAdultTicket())));
+        verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 30);
     }
 
     @Test
-    void passesOnCalculatingSingleInfantPrice() {
+    void passesOnCalculatingSingleInfantAdultPrice() {
         when(pricingService.getPrice(any())).thenCallRealMethod();
-        impl.purchaseTickets(generatePurchaseRequest(List.of(generateSingleInfantTicket())));
-        verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 0);
+        impl.purchaseTickets(generatePurchaseRequest(List.of(generateSingleInfantTicket(), generateSingleAdultTicket())));
+        verify(ticketPaymentService, only()).makePayment(ACCOUNT_ID, 20);
     }
 
     @Test
@@ -138,17 +138,17 @@ public class TicketServiceSeatingPricingTest {
     }
 
     @Test
-    void passesOnCalculatingSingleChildSeats() {
+    void passesOnCalculatingSingleChildSeatsWithAdult() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(generatePurchaseRequest(List.of(generateSingleChildTicket())));
-        verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 1);
+        impl.purchaseTickets(generatePurchaseRequest(List.of(generateSingleChildTicket(), generateSingleAdultTicket())));
+        verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 2);
     }
 
     @Test
-    void passesOnCalculatingSingleInfantSeats() {
+    void passesOnCalculatingSingleInfantSeatsWithAdult() {
         when(seatingCalculatorService.getSeatReservationCount(any())).thenCallRealMethod();
-        impl.purchaseTickets(generatePurchaseRequest(List.of(generateSingleInfantTicket())));
-        verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 0);
+        impl.purchaseTickets(generatePurchaseRequest(List.of(generateSingleInfantTicket(), generateSingleAdultTicket())));
+        verify(seatReservationService, only()).reserveSeat(ACCOUNT_ID, 1);
     }
 
     @Test

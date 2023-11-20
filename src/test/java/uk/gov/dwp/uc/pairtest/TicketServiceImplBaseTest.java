@@ -21,9 +21,6 @@ public class TicketServiceImplBaseTest {
     private final Random random = ThreadLocalRandom.current();
     private TicketServiceImpl impl;
 
-    private static final TicketRequest.Type[] TYPES = TicketRequest.Type.values();
-    private static final int TYPES_LENGTH = TYPES.length;
-
     @BeforeEach
     void setUp() {
         impl = new TicketServiceImpl(mock(PricingService.class),
@@ -97,6 +94,43 @@ public class TicketServiceImplBaseTest {
                 () -> impl.purchaseTickets(null));
     }
 
+    @Test
+    void failsOnChildWithoutAdult() {
+        Assertions.assertThrows(InvalidPurchaseException.class,
+                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
+                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 1)))));
+    }
+
+    @Test
+    void failsOnInfantWithoutAdult() {
+        Assertions.assertThrows(InvalidPurchaseException.class,
+                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
+                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 1)))));
+    }
+
+    @Test
+    void failsOnInfantAndChildWithoutAdult() {
+        Assertions.assertThrows(InvalidPurchaseException.class,
+                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
+                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 1),
+                                new TicketRequest(TicketRequest.Type.INFANT, 1)))));
+    }
+
+    @Test
+    void failsOnMultipleInfantAndChildWithoutAdult() {
+        Assertions.assertThrows(InvalidPurchaseException.class,
+                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
+                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 2),
+                                new TicketRequest(TicketRequest.Type.INFANT, 3)))));
+    }
+
+    @Test
+    void failsOnThreeChildrenInATrenchCoatWithoutAdult() {
+        Assertions.assertThrows(InvalidPurchaseException.class,
+                () -> impl.purchaseTickets(new TicketPurchaseRequest(1,
+                        List.of(new TicketRequest(TicketRequest.Type.CHILD, 3)))));
+    }
+
     private TicketPurchaseRequest generateValidTicketPurchaseRequest(List<TicketRequest> ticketRequest) {
         return new TicketPurchaseRequest(random.nextLong(0, Long.MAX_VALUE), ticketRequest);
     }
@@ -106,15 +140,15 @@ public class TicketServiceImplBaseTest {
     }
 
     private TicketRequest generateTestableTicketRequestSingleIssue() {
-        return new TicketRequest(TYPES[random.nextInt(TYPES_LENGTH)], 1);
+        return new TicketRequest(TicketRequest.Type.ADULT, 1);
     }
 
     private TicketRequest generateValidTestableTicketRequestMultipleIssueFixedAmount(int noOfTicketsFixed) {
-        return new TicketRequest(TYPES[random.nextInt(TYPES_LENGTH)], noOfTicketsFixed);
+        return new TicketRequest(TicketRequest.Type.ADULT, noOfTicketsFixed);
     }
 
     private TicketRequest generateInvalidTestableTicketRequestMultipleIssue() {
-        return new TicketRequest(TYPES[random.nextInt(TYPES_LENGTH)], random.nextInt(Integer.MIN_VALUE, 0));
+        return new TicketRequest(TicketRequest.Type.ADULT, random.nextInt(Integer.MIN_VALUE, 0));
     }
 
     private ArrayList<TicketRequest> getTicketRequests(int listSize, ICallable<TicketRequest> callable) {

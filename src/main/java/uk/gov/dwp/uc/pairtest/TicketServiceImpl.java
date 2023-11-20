@@ -49,6 +49,18 @@ public class TicketServiceImpl implements TicketService {
             throw new InvalidPurchaseException();
         }
 
+        var findUnderage = ticketPurchaseRequest.getTicketTypeRequests().stream()
+                .anyMatch(t -> t.getTicketType() == TicketRequest.Type.CHILD
+                        || t.getTicketType() == TicketRequest.Type.INFANT);
+        if (findUnderage) {
+            var cannotFindAdult = ticketPurchaseRequest.getTicketTypeRequests()
+                    .stream()
+                    .noneMatch(t -> t.getTicketType() == TicketRequest.Type.ADULT);
+            if (cannotFindAdult) {
+                throw new InvalidPurchaseException();
+            }
+        }
+
         var totalAmount = ticketPurchaseRequest.getTicketTypeRequests()
                 .stream()
                 .mapToInt(t -> pricingService.getPrice(t.getTicketType()) * t.getNoOfTickets())
