@@ -40,7 +40,7 @@ public class TicketServiceImpl implements TicketService {
         reserveSeats(ticketPurchaseRequest);
     }
 
-    private static void rejectInvalidRequests(TicketPurchaseRequest ticketPurchaseRequest) {
+    private void rejectInvalidRequests(TicketPurchaseRequest ticketPurchaseRequest) {
         if (ticketPurchaseRequest == null) {
             throw new InvalidPurchaseException();
         }
