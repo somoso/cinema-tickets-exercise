@@ -4,7 +4,9 @@ import thirdparty.paymentgateway.TicketPaymentService;
 import thirdparty.seatbooking.SeatReservationService;
 import uk.gov.dwp.uc.pairtest.domain.TicketPurchaseRequest;
 import uk.gov.dwp.uc.pairtest.domain.TicketRequest;
+import uk.gov.dwp.uc.pairtest.exception.ExcessiveTicketException;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
+import uk.gov.dwp.uc.pairtest.exception.NoAdultPresentException;
 
 
 public class TicketServiceImpl implements TicketService {
@@ -52,7 +54,7 @@ public class TicketServiceImpl implements TicketService {
 
     private void restrictTicketSales(TicketPurchaseRequest ticketPurchaseRequest) {
         if (ticketPurchaseRequest.getTicketTypeRequests().size() > MAX_TICKET_AMOUNT) {
-            throw new InvalidPurchaseException();
+            throw new ExcessiveTicketException();
         }
 
         var sum = ticketPurchaseRequest.getTicketTypeRequests().stream().mapToInt(TicketRequest::getNoOfTickets).sum();
@@ -60,7 +62,7 @@ public class TicketServiceImpl implements TicketService {
             throw new InvalidPurchaseException();
         }
         if (sum > MAX_TICKET_AMOUNT) {
-            throw new InvalidPurchaseException();
+            throw new ExcessiveTicketException();
         }
     }
 
@@ -73,7 +75,7 @@ public class TicketServiceImpl implements TicketService {
                     .stream()
                     .noneMatch(t -> t.getTicketType() == TicketRequest.Type.ADULT);
             if (cannotFindAdult) {
-                throw new InvalidPurchaseException();
+                throw new NoAdultPresentException();
             }
         }
     }
