@@ -3,6 +3,8 @@ package uk.gov.dwp.uc.pairtest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import thirdparty.paymentgateway.TicketPaymentService;
+import thirdparty.seatbooking.SeatReservationService;
 import uk.gov.dwp.uc.pairtest.domain.TicketPurchaseRequest;
 import uk.gov.dwp.uc.pairtest.domain.TicketRequest;
 import uk.gov.dwp.uc.pairtest.exception.InvalidPurchaseException;
@@ -12,7 +14,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class TicketServiceImplTest {
+import static org.mockito.Mockito.mock;
+
+public class TicketServiceImplBaseTest {
 
     private final Random random = ThreadLocalRandom.current();
     private TicketServiceImpl impl;
@@ -22,7 +26,10 @@ public class TicketServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        impl = new TicketServiceImpl();
+        impl = new TicketServiceImpl(mock(PricingService.class),
+                mock(SeatingCalculatorService.class),
+                mock(TicketPaymentService.class),
+                mock(SeatReservationService.class));
     }
 
     @Test
@@ -45,9 +52,8 @@ public class TicketServiceImplTest {
 
     @Test
     void passesOnTwentyCollectionTickets() {
-        var tickets = getTicketRequests(4, () -> generateValidTestableTicketRequestMultipleIssue(5));
-        Assertions.assertThrows(InvalidPurchaseException.class,
-                () -> impl.purchaseTickets(generateValidTicketPurchaseRequest(tickets)));
+        var tickets = getTicketRequests(4, () -> generateValidTestableTicketRequestMultipleIssueFixedAmount(5));
+        impl.purchaseTickets(generateValidTicketPurchaseRequest(tickets));
     }
 
     @Test
@@ -59,7 +65,7 @@ public class TicketServiceImplTest {
 
     @Test
     void failsOnTwentyOneCollectionTickets() {
-        var tickets = getTicketRequests(3, () -> generateValidTestableTicketRequestMultipleIssue(7));
+        var tickets = getTicketRequests(3, () -> generateValidTestableTicketRequestMultipleIssueFixedAmount(7));
         Assertions.assertThrows(InvalidPurchaseException.class,
                 () -> impl.purchaseTickets(generateValidTicketPurchaseRequest(tickets)));
     }
@@ -85,6 +91,12 @@ public class TicketServiceImplTest {
                         List.of(generateTestableTicketRequestSingleIssue()))));
     }
 
+    @Test
+    void failsOnNullValues() {
+        Assertions.assertThrows(InvalidPurchaseException.class,
+                () -> impl.purchaseTickets(null));
+    }
+
     private TicketPurchaseRequest generateValidTicketPurchaseRequest(List<TicketRequest> ticketRequest) {
         return new TicketPurchaseRequest(random.nextLong(0, Long.MAX_VALUE), ticketRequest);
     }
@@ -97,8 +109,8 @@ public class TicketServiceImplTest {
         return new TicketRequest(TYPES[random.nextInt(TYPES_LENGTH)], 1);
     }
 
-    private TicketRequest generateValidTestableTicketRequestMultipleIssue(int noOfTicketsMaxAmount) {
-        return new TicketRequest(TYPES[random.nextInt(TYPES_LENGTH)], random.nextInt(0, noOfTicketsMaxAmount));
+    private TicketRequest generateValidTestableTicketRequestMultipleIssueFixedAmount(int noOfTicketsFixed) {
+        return new TicketRequest(TYPES[random.nextInt(TYPES_LENGTH)], noOfTicketsFixed);
     }
 
     private TicketRequest generateInvalidTestableTicketRequestMultipleIssue() {
