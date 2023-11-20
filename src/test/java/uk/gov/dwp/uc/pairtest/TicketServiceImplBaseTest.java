@@ -153,9 +153,7 @@ public class TicketServiceImplBaseTest {
     }
 
     private ArrayList<TicketRequest> getTicketRequests(int listSize, Supplier<TicketRequest> callable) {
-        // Initialising ArrayList with n + 1 so that we do not waste CPU resources growing the ArrayList past the
-        // initial limit of 10
-        var tickets = new ArrayList<TicketRequest>(listSize + 1);
+        var tickets = new ArrayList<TicketRequest>(listSize);
         for (int i = 0; i < listSize; i++) {
             tickets.add(callable.get());
         }
